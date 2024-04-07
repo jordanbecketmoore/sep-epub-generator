@@ -1,0 +1,1 @@
+curl https://plato.stanford.edu/contents.html | grep -E "entries/[^/]*/" -o | sort | uniq | sed -e "s|^|https://plato.stanford.edu/|g" > links.txt

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Hegel's Dialectics</dc:title>
+    <dc:creator opf:role="aut">Stanford Encyclopedia of Philosophy</dc:creator>
+    <dc:language>en</dc:language>
+    <dc:date>2024-04-06</dc:date>
+  </metadata>
+  <manifest>
+    <item id="file1" href="article.html" media-type="text/html"/>
+  </manifest>
+  <spine>
+    <itemref idref="file1"/>
+  </spine>
+</package>
+
