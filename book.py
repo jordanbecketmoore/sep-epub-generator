@@ -1,7 +1,7 @@
 import os
 import requests
 from bs4 import BeautifulSoup
-import threading
+import multiprocessing
 
 def extract_article(input_html):
     # Parse the HTML content using Beautiful Soup
@@ -35,26 +35,15 @@ def process_links(links_file):
     with open(links_file, 'r') as f:
         links = f.read().splitlines()
 
-    threads = []
-    for link in links:
-        thread = threading.Thread(target=pull, args=(link,))
-        threads.append(thread)
-
-    # Start all threads
-    for thread in threads:
-        thread.start()
-
-    # Wait for all threads to finish
-    for thread in threads:
-        thread.join()
-
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        pool.map(pull, links)
 def pull(link): 
     # Extract the article name from the link
     article_name = link.split('/')[-2]
-    output_file = f"book/OPS/{article_name}.html"
+    output_file = f"book/OPS/entries/{article_name}.html"
 
     if os.path.exists(output_file):
-        print("Article already downloaded.")
+        print(f"Article already downloaded: {article_name}.html")
         return 
 
     # Download HTML content from the link
