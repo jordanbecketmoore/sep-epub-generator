@@ -1,12 +1,11 @@
+import os
+import requests
 from bs4 import BeautifulSoup
+import threading
 
-def extract_article(input_file, output_file):
-    # Read the input HTML file
-    with open(input_file, 'r', encoding='utf-8') as f:
-        html_content = f.read()
-
+def extract_article(input_html):
     # Parse the HTML content using Beautiful Soup
-    soup = BeautifulSoup(html_content, 'html.parser')
+    soup = BeautifulSoup(input_html, 'html.parser')
 
     # Find the div with id "article"
     article_div = soup.find('div', id='article')
@@ -16,13 +15,11 @@ def extract_article(input_file, output_file):
         for element in soup.find_all(True):
             if element != article_div and not is_descendant(element, article_div):
                 element.extract()
-
-        # Write the content of the article div to the output file
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(str(article_div))
-        print("Article extracted and saved successfully to", output_file)
+        
+        return str(article_div)
     else:
         print("Div with id 'article' not found in the input HTML file.")
+        return None
 
 def is_descendant(element, ancestor):
     """
@@ -33,7 +30,52 @@ def is_descendant(element, ancestor):
             return True
     return False
 
-# Usage example:
-input_file = 'index.html'
-output_file = 'article.html'
-extract_article(input_file, output_file)
+def process_links(links_file):
+    # Read links from the file
+    with open(links_file, 'r') as f:
+        links = f.read().splitlines()
+
+    threads = []
+    for link in links:
+        thread = threading.Thread(target=pull, args=(link,))
+        threads.append(thread)
+
+    # Start all threads
+    for thread in threads:
+        thread.start()
+
+    # Wait for all threads to finish
+    for thread in threads:
+        thread.join()
+
+def pull(link): 
+    # Extract the article name from the link
+    article_name = link.split('/')[-2]
+    output_file = f"book/OPS/{article_name}.html"
+
+    if os.path.exists(output_file):
+        print("Article already downloaded.")
+        return 
+
+    # Download HTML content from the link
+    response = requests.get(link)
+    if response.status_code == 200:
+        input_html = response.content
+
+        # Extract article div and its sub divs
+        article_content = extract_article(input_html)
+        if article_content:
+            # Write modified HTML to file
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(article_content)
+            print(f"Article extracted and saved successfully to {output_file}")
+    else:
+        print(f"Failed to download HTML content from {link}")
+        
+    return
+
+if __name__ == '__main__':
+
+    # Usage example:
+    links_file = 'links.txt'
+    process_links(links_file)
